@@ -10,6 +10,7 @@ import {
   isSupabaseConfigured,
   supabase,
 } from "./lib/supabase";
+import { getPlantChoice, plantChoiceStorageKey } from "./lib/plants";
 import { CaptureScreen } from "./pages/CaptureScreen";
 import { ChatScreen } from "./pages/ChatScreen";
 import { ConfigMissing } from "./pages/ConfigMissing";
@@ -28,12 +29,14 @@ function App() {
   const [cooldown, setCooldown] = useState<Cooldown | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [friends, setFriends] = useState<FriendRow[]>([]);
+  const [plantChoiceKey, setPlantChoiceKey] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("feed");
   const [activeChat, setActiveChat] = useState<FriendRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<Notice | null>(null);
 
   const userId = session?.user.id;
+  const plantChoice = getPlantChoice(plantChoiceKey);
 
   const loadCore = useCallback(async () => {
     if (!supabase || !userId) return;
@@ -99,6 +102,9 @@ function App() {
 
   useEffect(() => {
     if (!session) return;
+    if (session.user.id) {
+      setPlantChoiceKey(localStorage.getItem(plantChoiceStorageKey(session.user.id)));
+    }
     setLoading(true);
     loadCore()
       .catch((error) => setNotice({ tone: "bad", text: error.message }))
@@ -126,8 +132,21 @@ function App() {
     return <LoginScreen />;
   }
 
-  if (!profile) {
-    return <UsernameScreen session={session} onReady={loadCore} />;
+  if (!profile || !plantChoiceKey) {
+    return (
+      <UsernameScreen
+        session={session}
+        profile={profile}
+        onPlantSelected={(nextPlantKey) => {
+          localStorage.setItem(
+            plantChoiceStorageKey(session.user.id),
+            nextPlantKey,
+          );
+          setPlantChoiceKey(nextPlantKey);
+        }}
+        onReady={loadCore}
+      />
+    );
   }
 
   const refresh = async (message?: Notice) => {
@@ -173,6 +192,7 @@ function App() {
         {tab === "plant" && plant && (
           <PlantScreen
             plant={plant}
+            plantChoice={plantChoice}
             onWater={() => refresh()}
             setNotice={setNotice}
           />
@@ -204,7 +224,6 @@ function App() {
           <ProfileScreen
             profile={profile}
             plant={plant}
-            cooldown={cooldown}
             friendCount={friends.length}
           />
         )}

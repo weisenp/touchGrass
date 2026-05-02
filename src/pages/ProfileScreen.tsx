@@ -2,18 +2,14 @@ import { LogOut } from "lucide-react";
 import { Avatar } from "../components/Avatar";
 import type { PlantState, Profile } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
-import { formatCountdown } from "../lib/time";
-import type { Cooldown } from "../types/app";
 
 export function ProfileScreen({
   profile,
   plant,
-  cooldown,
   friendCount,
 }: {
   profile: Profile;
   plant: PlantState | null;
-  cooldown: Cooldown | null;
   friendCount: number;
 }) {
   async function signOut() {
@@ -22,9 +18,14 @@ export function ProfileScreen({
 
   return (
     <div className="profile-screen">
-      <Avatar profile={profile} large />
-      <h2>{profile.display_name || profile.username}</h2>
-      <p>@{profile.username}</p>
+      <section className="profile-hero">
+        <Avatar profile={profile} large />
+        <div className="profile-name-block">
+          <h2>{profile.display_name || profile.username}</h2>
+          <p>@{profile.username}</p>
+        </div>
+      </section>
+
       <div className="profile-stats">
         <span>
           <strong>{plant?.level ?? 1}</strong> level
@@ -36,10 +37,18 @@ export function ProfileScreen({
           <strong>{friendCount}</strong> friends
         </span>
       </div>
-      <div className="profile-id">{profile.id}</div>
-      <div className="profile-id">
-        post: {formatCountdown(cooldown?.next_allowed_post_at)}
-      </div>
+
+      <section className="profile-card">
+        <div>
+          <span>growth</span>
+          <strong>{plant?.growth_points ?? 0} pts</strong>
+        </div>
+        <div>
+          <span>backup chance</span>
+          <strong>{plant?.pity_points ?? 0}/3</strong>
+        </div>
+      </section>
+
       <button className="secondary-action" onClick={signOut} type="button">
         <LogOut size={18} />
         Sign out

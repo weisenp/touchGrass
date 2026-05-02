@@ -2,16 +2,19 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { PlantGlyph } from "../components/PlantGlyph";
 import { growthThreshold } from "../lib/plant";
+import type { PlantChoice } from "../lib/plants";
 import type { PlantState } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
 import type { Notice } from "../types/app";
 
 export function PlantScreen({
   plant,
+  plantChoice,
   onWater,
   setNotice,
 }: {
   plant: PlantState;
+  plantChoice: PlantChoice;
   onWater: () => Promise<void>;
   setNotice: (notice: Notice) => void;
 }) {
@@ -42,32 +45,51 @@ export function PlantScreen({
 
   return (
     <div className="plant-screen">
-      <div className="plant-metrics">
-        <div>
-          <span>waters</span>
-          <strong>{plant.water_count}</strong>
+      <div className="plant-header-card">
+        <div className="pill">
+          Level <span>{plant.level}</span>
         </div>
-        <div>
-          <span>growth</span>
-          <strong>
-            {plant.growth_points}/{threshold}
-          </strong>
-        </div>
-        <div>
-          <span>pity</span>
-          <strong>{plant.pity_points}/3</strong>
+        <div className="xp-text">
+          {plant.growth_points} / {threshold} growth
         </div>
       </div>
-      <PlantGlyph level={plant.level} progress={progress} />
-      <button
-        className="water-button"
-        disabled={busy || plant.water_count < 1}
-        onClick={water}
-        type="button"
-      >
-        {busy ? <Loader2 className="spin" size={20} /> : null}
-        Water
-      </button>
+
+      <PlantGlyph
+        level={plant.level}
+        progress={progress}
+        icon={plantChoice.icon}
+      />
+
+      <div className="xp-wrap" aria-hidden="true">
+        <div className="xp-bar" style={{ width: `${progress * 100}%` }} />
+      </div>
+
+      <div className="plant-water-row">
+        <div className="drop-row" aria-label={`${plant.water_count} waters`}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <span
+              className={index < plant.water_count ? "drop filled" : "drop"}
+              key={index}
+            />
+          ))}
+        </div>
+        
+        <button
+          className="water-btn"
+          disabled={busy || plant.water_count < 1}
+          onClick={water}
+          type="button"
+          title="Water plant"
+        >
+          {busy ? <Loader2 className="spin" size={20} /> : "💧"}
+        </button>
+      </div>
+
+      <p className="plant-msg">
+        {plant.water_count > 0
+          ? "Spend a water for a growth roll. Posting outside earns more."
+          : "No water left. Post from outside to refill your watering can."}
+      </p>
     </div>
   );
 }

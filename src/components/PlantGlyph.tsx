@@ -1,9 +1,10 @@
 type PlantGlyphProps = {
   level: number;
   progress: number;
+  icon?: string;
 };
 
-export function PlantGlyph({ level, progress }: PlantGlyphProps) {
+export function PlantGlyph({ level, progress, icon = "🌿" }: PlantGlyphProps) {
   const leaves = Math.min(8, Math.max(2, level + 2));
 
   return (
@@ -24,6 +25,9 @@ export function PlantGlyph({ level, progress }: PlantGlyphProps) {
           />
         );
       })}
+      <div className="plant-icon-mark" aria-hidden="true">
+        {icon}
+      </div>
       <div className="plant-level-mark">Lv {level}</div>
     </div>
   );
