@@ -20,7 +20,7 @@ import { PlantScreen } from "./pages/PlantScreen";
 import { ProfileScreen } from "./pages/ProfileScreen";
 import { UsernameScreen } from "./pages/UsernameScreen";
 import type { Cooldown, Notice } from "./types/app";
-
+// test
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
