@@ -71,7 +71,7 @@ export function CaptureScreen({
     setBusy(false);
 
     if (invokeError) {
-      setError(invokeError.message);
+      setError(await functionErrorMessage(invokeError));
       return;
     }
 
@@ -182,4 +182,26 @@ export function CaptureScreen({
       ) : null}
     </form>
   );
+}
+
+async function functionErrorMessage(error: unknown) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "context" in error &&
+    error.context instanceof Response
+  ) {
+    try {
+      const payload = (await error.context.clone().json()) as {
+        reason?: unknown;
+        message?: unknown;
+      };
+      if (typeof payload.reason === "string") return payload.reason;
+      if (typeof payload.message === "string") return payload.message;
+    } catch {
+      // Fall through to the SDK message.
+    }
+  }
+
+  return error instanceof Error ? error.message : "Verification failed.";
 }

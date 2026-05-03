@@ -1,5 +1,5 @@
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PlantGlyph } from "../components/PlantGlyph";
 import { growthThreshold } from "../lib/plant";
 import type { PlantChoice } from "../lib/plants";
@@ -19,19 +19,40 @@ export function PlantScreen({
   setNotice: (notice: Notice) => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [isWatering, setIsWatering] = useState(false);
+  const [isGrowing, setIsGrowing] = useState(false);
+  const wateringTimer = useRef<number | null>(null);
+  const growingTimer = useRef<number | null>(null);
   const threshold = growthThreshold(plant.level);
   const progress = Math.min(1, plant.growth_points / threshold);
+
+  useEffect(() => {
+    return () => {
+      if (wateringTimer.current) window.clearTimeout(wateringTimer.current);
+      if (growingTimer.current) window.clearTimeout(growingTimer.current);
+    };
+  }, []);
 
   async function water() {
     if (!supabase || busy || plant.water_count < 1) return;
     setBusy(true);
+    setIsWatering(true);
+    setIsGrowing(false);
+    if (wateringTimer.current) window.clearTimeout(wateringTimer.current);
+    if (growingTimer.current) window.clearTimeout(growingTimer.current);
+    wateringTimer.current = window.setTimeout(() => setIsWatering(false), 900);
     const { data, error } = await supabase.rpc("water_plant");
     setBusy(false);
     if (error) {
+      setIsWatering(false);
       setNotice({ tone: "bad", text: error.message });
       return;
     }
     const result = data as { grew: boolean; leveled_up: boolean } | null;
+    if (result?.grew) {
+      setIsGrowing(true);
+      growingTimer.current = window.setTimeout(() => setIsGrowing(false), 850);
+    }
     setNotice({
       tone: result?.grew ? "ok" : "warn",
       text: result?.leveled_up
@@ -58,6 +79,8 @@ export function PlantScreen({
         level={plant.level}
         progress={progress}
         icon={plantChoice.icon}
+        isWatering={isWatering}
+        isGrowing={isGrowing}
       />
 
       <div className="xp-wrap" aria-hidden="true">

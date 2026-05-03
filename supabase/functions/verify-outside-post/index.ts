@@ -48,13 +48,13 @@ Deno.serve(async (request) => {
 
     const body = (await request.json()) as VerifyBody;
     if (!body.selfiePath || !body.outsidePath) {
-      return json({ status: 'needs_retry', reason: 'Selfie and outside photos are required.' }, 400);
+      return json({ status: 'needs_retry', reason: 'Selfie and outside photos are required.' });
     }
 
     const userId = userData.user.id;
     const { data: profile } = await admin.from('profiles').select('id').eq('id', userId).maybeSingle();
     if (!profile) {
-      return json({ status: 'needs_retry', reason: 'Create a username first.' }, 403);
+      return json({ status: 'needs_retry', reason: 'Create a username first.' });
     }
 
     const { data: cooldown } = await admin
@@ -64,7 +64,7 @@ Deno.serve(async (request) => {
       .maybeSingle();
 
     if (cooldown?.next_allowed_post_at && new Date(cooldown.next_allowed_post_at).getTime() > Date.now()) {
-      return json({ status: 'needs_retry', reason: 'Post cooldown is still active.' }, 429);
+      return json({ status: 'needs_retry', reason: 'Post cooldown is still active.' });
     }
 
     const outsideUrl = publicUrl(admin, body.outsidePath);
@@ -100,7 +100,7 @@ Deno.serve(async (request) => {
     return json({ postId: post.id, status: verification.status, reason: verification.reason });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Verification failed.';
-    return json({ status: 'needs_retry', reason: message }, 500);
+    return json({ status: 'needs_retry', reason: message });
   }
 });
 

@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import type {
   CSSProperties,
   FormEvent,
@@ -62,9 +62,11 @@ function PostItem({
   onSwipe: (direction: -1 | 1) => void;
 }) {
   const [comment, setComment] = useState("");
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [dragStart, setDragStart] = useState<{
+    x: number;
+    y: number;
+    locked: boolean;
+  } | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [comments, setComments] = useState<PostComment[]>([]);
   const [commentError, setCommentError] = useState("");
@@ -137,13 +139,15 @@ function PostItem({
     const target = event.target;
     if (
       target instanceof Element &&
-      target.closest("input, textarea, button, a")
+      target.closest("input, textarea, button, a, .comments-panel")
     ) {
       return;
     }
 
+    const locked =
+      target instanceof Element && !!target.closest(".post-photo-frame");
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDragStart({ x: event.clientX, y: event.clientY });
+    setDragStart({ x: event.clientX, y: event.clientY, locked });
     setDragOffset(0);
   }
 
@@ -153,6 +157,7 @@ function PostItem({
     const verticalOffset = event.clientY - dragStart.y;
 
     if (
+      !dragStart.locked &&
       Math.abs(verticalOffset) > Math.abs(nextOffset) &&
       Math.abs(verticalOffset) > 10
     ) {
