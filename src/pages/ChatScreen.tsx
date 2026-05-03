@@ -29,6 +29,10 @@ export function ChatScreen({
       .limit(100);
     setMessages((data ?? []) as Message[]);
 
+    await supabase.rpc("refresh_message_streak", {
+      other_user_id: friend.friend_id,
+    });
+
     const { data: streakData } = await supabase.rpc("get_message_streak", {
       other_user_id: friend.friend_id,
     });
@@ -40,6 +44,12 @@ export function ChatScreen({
     setMessages([]);
     setSendError("");
     loadMessages();
+
+    const timer = window.setInterval(() => {
+      loadMessages(false);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
   }, [loadMessages]);
 
   async function send(event: FormEvent) {

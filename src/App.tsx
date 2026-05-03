@@ -58,7 +58,6 @@ function App() {
           .from("posts")
           .select("*, author:profiles(id, username, display_name, avatar_url)")
           .eq("verification_status", "approved")
-          .neq("author_id", userId)
           .order("created_at", { ascending: false })
           .limit(30),
         supabase.rpc("list_friendships"),
@@ -73,7 +72,28 @@ function App() {
     setProfile(profileRes.data);
     setPlant(plantRes.data);
     setCooldown(cooldownRes.data);
-    setPosts((postsRes.data ?? []) as Post[]);
+    const loadedPosts = (postsRes.data ?? []) as Post[];
+    const authorIds = [...new Set(loadedPosts.map((post) => post.author_id))];
+    const plantLevels = new Map<string, number>();
+
+    if (authorIds.length > 0) {
+      const { data: postPlantData, error: postPlantError } = await supabase
+        .from("plant_states")
+        .select("user_id, level")
+        .in("user_id", authorIds);
+
+      if (postPlantError) throw postPlantError;
+      postPlantData?.forEach((state) => {
+        plantLevels.set(state.user_id, state.level);
+      });
+    }
+
+    setPosts(
+      loadedPosts.map((post) => ({
+        ...post,
+        plant_level: plantLevels.get(post.author_id),
+      })),
+    );
     setFriends((friendsRes.data ?? []) as FriendRow[]);
   }, [userId]);
 
@@ -109,6 +129,15 @@ function App() {
     loadCore()
       .catch((error) => setNotice({ tone: "bad", text: error.message }))
       .finally(() => setLoading(false));
+  }, [loadCore, session]);
+
+  useEffect(() => {
+    if (!session) return;
+    const timer = window.setInterval(() => {
+      loadCore().catch((error) => setNotice({ tone: "bad", text: error.message }));
+    }, 5000);
+
+    return () => window.clearInterval(timer);
   }, [loadCore, session]);
 
   const readyToPost = useMemo(() => {

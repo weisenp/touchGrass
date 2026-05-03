@@ -1,4 +1,4 @@
-import { Check, Search, Send, UserPlus } from "lucide-react";
+import { Check, Flame, MessageCircle, Search, UserPlus } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { Avatar } from "../components/Avatar";
 import { EmptyState } from "../components/EmptyState";
@@ -106,7 +106,11 @@ export function FriendsScreen({
       ) : (
         accepted.map((friend) => (
           <button
-            className="friend-chat-row"
+            className={
+              friend.last_message_from_friend
+                ? "friend-chat-row has-new-message"
+                : "friend-chat-row"
+            }
             key={friend.friend_id}
             onClick={() => onOpenChat(friend)}
             type="button"
@@ -120,10 +124,19 @@ export function FriendsScreen({
               }}
             />
             <div>
-              <strong>{friend.display_name || friend.username}</strong>
-              <span>@{friend.username}</span>
+              <div className="friend-row-title">
+                <strong>{friend.display_name || friend.username}</strong>
+                <span>
+                  <Flame size={12} /> {friend.streak ?? 0}
+                </span>
+              </div>
+              <span>
+                {friend.last_message
+                  ? `${friend.last_message_from_friend ? "New: " : ""}${friend.last_message}`
+                  : `@${friend.username}`}
+              </span>
             </div>
-            <Send size={17} />
+            <MessageCircle size={17} />
           </button>
         ))
       )}

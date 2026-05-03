@@ -33,6 +33,7 @@ export type Post = {
   verification_status: "pending" | "approved" | "rejected" | "needs_retry";
   created_at: string;
   author?: Profile;
+  plant_level?: number;
 };
 
 export type PlantState = {
@@ -52,6 +53,10 @@ export type FriendRow = {
   avatar_url: string | null;
   status: "pending" | "accepted";
   direction: "incoming" | "outgoing" | "friend";
+  streak: number;
+  last_message: string | null;
+  last_message_at: string | null;
+  last_message_from_friend: boolean;
 };
 
 export type Message = {
@@ -60,4 +65,13 @@ export type Message = {
   recipient_id: string;
   body: string;
   created_at: string;
+};
+
+export type PostComment = {
+  id: string;
+  post_id: string;
+  author_id: string;
+  body: string;
+  created_at: string;
+  author?: Profile;
 };

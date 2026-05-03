@@ -40,6 +40,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   background:
     radial-gradient(circle at 18% 8%, rgba(102, 187, 106, 0.26), transparent 24rem),
     linear-gradient(135deg, #e8f5e9 0%, #f9fafb 52%, #dde8dd 100%);
@@ -63,6 +64,8 @@ button:disabled {
   position: relative;
   width: min(100vw, 430px);
   min-height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
   margin: 0 auto;
   overflow: hidden;
   background: var(--paper);
@@ -159,8 +162,11 @@ button:disabled {
   position: relative;
   z-index: 1;
   height: calc(100vh - 84px);
+  height: calc(100dvh - 84px);
   overflow-y: auto;
-  padding: 8px 16px 112px;
+  overscroll-behavior: contain;
+  padding: 8px 16px calc(104px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
 }
 
 .notice {
@@ -278,6 +284,11 @@ button:disabled {
   object-fit: cover;
 }
 
+.post-photo-frame img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 .selfie-chip {
   position: absolute;
   right: 12px;
@@ -324,6 +335,48 @@ button:disabled {
   background: var(--paper);
   box-shadow: 0 10px 28px rgba(46, 125, 50, 0.12);
   touch-action: pan-y;
+  transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0));
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+  will-change: transform;
+}
+
+.photo-card.is-dragging {
+  box-shadow: 0 14px 34px rgba(46, 125, 50, 0.18);
+  transition: none;
+}
+
+.swipe-feedback {
+  position: absolute;
+  z-index: 2;
+  top: 80px;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.photo-card.swiping-back .swipe-feedback.left,
+.photo-card.swiping-next .swipe-feedback.right {
+  opacity: var(--swipe-progress, 0);
+}
+
+.swipe-feedback.left {
+  left: 14px;
+  color: var(--water);
+  transform: rotate(-9deg);
+}
+
+.swipe-feedback.right {
+  right: 14px;
+  color: var(--green-700);
+  transform: rotate(9deg);
 }
 
 .photo-card .post-header {
@@ -500,11 +553,26 @@ button:disabled {
 }
 
 .comment-form button {
+  display: grid;
   width: 34px;
   height: 34px;
   border: 0;
   background: var(--green-600);
   color: #fff;
+  place-items: center;
+  padding: 0;
+}
+
+.comment-form button svg,
+.message-form button svg {
+  display: block;
+}
+
+.comment-error {
+  margin: -2px 4px 0;
+  color: #7a2016;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .plant-metrics,
@@ -936,10 +1004,13 @@ button:disabled {
 }
 
 .message-form button {
+  display: grid;
   min-width: 36px;
   min-height: 36px;
   border-radius: 50%;
   background: var(--green-600);
+  place-items: center;
+  padding: 0;
 }
 
 .person-row,
@@ -953,6 +1024,27 @@ button:disabled {
 
 .friend-chat-row {
   width: 100%;
+}
+
+.friend-chat-row.has-new-message > svg {
+  color: var(--green-600);
+  fill: var(--green-100);
+}
+
+.friend-row-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.friend-row-title span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--green-700);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .avatar {
@@ -1415,7 +1507,7 @@ button:disabled {
   position: absolute;
   z-index: 5;
   right: 14px;
-  bottom: 14px;
+  bottom: max(10px, env(safe-area-inset-bottom));
   left: 14px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1453,11 +1545,14 @@ button:disabled {
 
   .phone-shell {
     min-height: calc(100vh - 40px);
+    min-height: calc(100dvh - 40px);
+    height: calc(100dvh - 40px);
     border-radius: 24px;
   }
 
   .screen-body {
     height: calc(100vh - 124px);
+    height: calc(100dvh - 124px);
   }
 }
 
