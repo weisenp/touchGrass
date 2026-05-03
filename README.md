@@ -17,9 +17,7 @@ VITE_SUPABASE_URL=https://akhsxfqjwqrzzgzdxhht.supabase.co
 VITE_SUPABASE_ANON_KEY=<Supabase anon public key>
 ```
 
-3. Apply the migration in `supabase/migrations/202605020001_touchgrass_mvp.sql` to the Supabase project.
-
-If your network is IPv4-only, use Supabase's Session Pooler connection string instead of the direct database host.
+3. Apply the migration in `supabase/migrations` to the Supabase project.
 
 4. Deploy the Edge Function in `supabase/functions/verify-outside-post` and set these function secrets:
 
