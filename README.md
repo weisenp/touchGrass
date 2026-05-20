@@ -1,5 +1,7 @@
 # TouchGrass
 
+### [Hack Melbourne First Place Winner ](https://devpost.com/software/touch-grass-mpyq67)
+
 Mobile-first React/Supabase MVP for outside-photo posting, friend feeds, plant growth, and simple messaging.
 
 ## Local Setup
